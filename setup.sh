@@ -11,9 +11,6 @@ fi
 cd CMSSW_10_2_6/src
 eval `scram runtime -sh`
 
-curl -s --insecure https://cms-pdmv.cern.ch/mcm/public/restapi/requests/get_fragment/B2G-RunIIFall18wmLHEGS-00050 --retry 2 --create-dirs -o Configuration/GenProduction/python/B2G-RunIIFall18wmLHEGS-00050-fragment.py 
-[ -s Configuration/GenProduction/python/B2G-RunIIFall18wmLHEGS-00050-fragment.py ] || exit $?;
-
 scram b
 cd ../../
 seed=$(date +%s)

@@ -1,14 +1,15 @@
 #!/usr/bin/python
 
-
+###Set input arguements###
 import argparse
 parser = argparse.ArgumentParser()
 ####Set options###
 parser.add_argument("--gridpack_path", help="gridpack_path")
 parser.add_argument("--jobname", help="jobname")
+parser.add_argument("--nevent", help="number of events")
 args = parser.parse_args()
 
-
+###Check the arugments###
 if args.gridpack_path:
     gridpack_path = args.gridpack_path
 else:
@@ -21,6 +22,11 @@ else:
     print "need --jobname argument"
     quit()
 
+if args.nevent:
+    nevent = args.nevent
+else:
+    print "need --nevent argument"
+    quit()
 
 
 f = open(jobname+"_python.py", 'w')
@@ -29,10 +35,14 @@ f = open(jobname+"_python.py", 'w')
 f.write("GRIDPACK_PATH="+'"'+gridpack_path+'"') 
 f.write("\n")
 f.write("OUTPUTNAME="+'"'+jobname+'"') 
-
+f.write("\n")
+f.write("NEVENT="+nevent) 
 contents='''
 
 
+from datetime import datetime
+dt = datetime.now()
+myseed=dt.microsecond
 
 import FWCore.ParameterSet.Config as cms
 
@@ -55,7 +65,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(580)
+    input = cms.untracked.int32(NEVENT)
 )
 
 # Input source
@@ -67,7 +77,7 @@ process.options = cms.untracked.PSet(
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
-    annotation = cms.untracked.string('Configuration/GenProduction/python/B2G-RunIIFall18wmLHEGS-00050-fragment.py nevts:580'),
+    annotation = cms.untracked.string('Configuration/GenProduction/python/B2G-RunIIFall18wmLHEGS-00050-fragment.py nevts:'+str(NEVENT)),
     name = cms.untracked.string('Applications'),
     version = cms.untracked.string('$Revision: 1.19 $')
 )
@@ -182,7 +192,7 @@ process.generator = cms.EDFilter("Pythia8HadronizerFilter",
 process.externalLHEProducer = cms.EDProducer("ExternalLHEProducer",
     #args = cms.vstring('/cvmfs/cms.cern.ch/phys_generator/gridpacks/2017/13TeV/madgraph/V5_2.4.2/DYJets_HT_mll50/DYJets_HT-100to200_slc6_amd64_gcc481_CMSSW_7_1_30_tarball.tar.xz'),
 args = cms.vstring(GRIDPACK_PATH),
-    nEvents = cms.untracked.uint32(580),
+    nEvents = cms.untracked.uint32(NEVENT),
     numberOfParameters = cms.uint32(1),
     outputFile = cms.string('cmsgrid_final.lhe'),
     scriptName = cms.FileInPath('GeneratorInterface/LHEInterface/data/run_generic_tarball_cvmfs.sh')
@@ -218,7 +228,7 @@ process = addMonitoring(process)
 
 # Customisation from command line
 
-process.RandomNumberGeneratorService.externalLHEProducer.initialSeed=int(1548694987%100)
+process.RandomNumberGeneratorService.externalLHEProducer.initialSeed=int(myseed)
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
