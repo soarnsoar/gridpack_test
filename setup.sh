@@ -9,6 +9,8 @@ else
 scram p CMSSW CMSSW_10_2_6
 fi
 cd CMSSW_10_2_6/src
+#echo 'scram build ProjectRename'>> run_template.sh
+scram build ProjectRename
 eval `scram runtime -sh`
 
 scram b
